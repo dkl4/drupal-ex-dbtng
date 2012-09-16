@@ -67,6 +67,97 @@
  */
 
 
+/**
+ * Read from the database using a filter array.
+ *
+ * In Drupal 6, the standard function to perform reads was db_query(), and
+ * for static queries, it still is.
+ *
+ * db_query() used an SQL query with placeholders and arguments as parameters.
+ *
+ * @code
+ *  // Old way
+ *  $query = "SELECT * FROM {dbtng_example} n WHERE n.uid = %d AND name = '%s'";
+ *  $result = db_query($query, $uid, $name);
+ * @endcode
+ *
+ * Drupal 7 DBTNG provides an abstracted interface that will work with a wide
+ * variety of database engines.
+ *
+ * db_query() is deprecated except when doing a static query. The following is
+ * perfectly acceptable in Drupal 7. See
+ * @link http://drupal.org/node/310072 the handbook page on static queries @endlink
+ *
+ * @code
+ *   // SELECT * FROM {dbtng_example} WHERE uid = 0 AND name = 'John'
+ *   db_query(
+ *     "SELECT * FROM {dbtng_example} WHERE uid = :uid and name = :name",
+ *     array(':uid' => 0, ':name' => 'John')
+ *   )->execute();
+ * @endcode
+ *
+ * But for more dynamic queries, Drupal provides the db_select()
+ * API method, so there are several ways to perform the same SQL query.
+ * Note tht db_select is, however, much slower than db_query so db_query is generally better if possible.
+ * See the @link http://drupal.org/node/310075 handbook page on dynamic queries. @endlink
+ *
+ * @code
+ *   // SELECT * FROM {dbtng_example} WHERE uid = 0 AND name = 'John'
+ *   db_select('dbtng_example')      // dbtng_example is the table name
+ *     ->fields('dbtng_example')
+ *     ->condition('uid', 0)
+ *     ->condition('name', 'John')
+ *     ->execute();
+ * @endcode
+ *
+ * Here is db_select with named placeholders:
+ * @code
+ *   // SELECT * FROM {dbtng_example} WHERE uid = 0 AND name = 'John'
+ *   $arguments = array(':name' => 'John', ':uid' => 0);
+ *   db_select('dbtng_example')       // dbtng_example is the table name
+ *     ->fields('dbtng_example')
+ *     ->where('uid = :uid AND name = :name', $arguments)
+ *     ->execute();
+ * @endcode
+ *
+ * Conditions are stacked and evaluated as AND and OR depending on the type of
+ * query. For more information, read the conditional queries handbook page at:
+ * http://drupal.org/node/310086
+ *
+ * The condition argument is an 'equal' evaluation by default, but this can be
+ * altered:
+ * @code
+ *   // SELECT * FROM {dbtng_example} WHERE age > 18
+ *   db_select('dbtng_example')      // dbtng_example is the table name
+ *     ->fields('dbtng_example')
+ *     ->condition('age', 18, '>')
+ *     ->execute();
+ * @endcode
+ *
+ * @param $entry
+ *   An array containing all the fields used to search the entries in the table.
+ * @return
+ *   An object containing the loaded entries if found.
+ *
+ * @see db_select()
+ * @see db_query()
+ * @see http://drupal.org/node/310072
+ * @see http://drupal.org/node/310075
+ *
+ */
+function dbtng_example_entry_load($entry = array()) {
+  // Read all fields from the dbtng_example table.
+  $select = db_select('dbtng_example', 'example');
+  $select->fields('example');
+
+  // Add each field and value as a condition to this query.
+  foreach ($entry as $field => $value) {
+    $select->condition($field, $value);
+  }
+  // Return the result in object format.
+  return $select->execute()->fetchAll();
+}
+
 
 //// Helper functions ////
 
@@ -153,19 +244,18 @@ function dbtng_example_list() {
   $output = '';
 
   // Get all entries in the dbtng_example table.
-  //if ($entries = dbtng_example_entry_load()) {
-  //  $rows = array();
-  //  foreach ($entries as $entry) {
-  //    // Sanitize the data before handing it off to the theme layer.
-  //    $rows[] = array_map('check_plain', (array) $entry);
-  //  }
-  //  // Make a table for them.
-  //  $header = array(t('Id'), t('uid'), t('Name'), t('Surname'), t('Age'));
-  //  $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  //}
-  //else {
-  //  drupal_set_message(t('No entries have been added yet.'));
-  //}
-      drupal_set_message(t('No entries have been added yet.'));
+  if ($entries = dbtng_example_entry_load()) {
+    $rows = array();
+    foreach ($entries as $entry) {
+      // Sanitize the data before handing it off to the theme layer.
+      $rows[] = array_map('check_plain', (array) $entry);
+    }
+    // Make a table for them.
+    $header = array(t('Id'), t('uid'), t('Name'), t('Surname'), t('Age'));
+    $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  }
+  else {
+    drupal_set_message(t('No entries have been added yet.'));
+  }
   return $output;
 }
