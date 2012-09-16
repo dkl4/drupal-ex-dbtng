@@ -259,14 +259,14 @@ function dbtng_example_menu() {
     'type'            => MENU_LOCAL_TASK,
     'weight'          => -9,
   );
-  //$items['examples/dbtng/update'] = array(
-  //  'title'           => 'Update entry',
-  //  'page callback'   => 'drupal_get_form',
-  //  'page arguments'  => array('dbtng_example_form_update'),
-  //  'type'            => MENU_LOCAL_TASK,
-  //  'access callback' => TRUE,
-  //  'weight'          => -5,
-  //);
+  $items['examples/dbtng/update'] = array(
+    'title'           => 'Update entry',
+    'page callback'   => 'drupal_get_form',
+    'page arguments'  => array('dbtng_example_form_update'),
+    'type'            => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+    'weight'          => -5,
+  );
   //$items['examples/dbtng/advanced'] = array(
   //  'title'           => 'Advanced list',
   //  'page callback'   => 'dbtng_example_advanced_list',
@@ -354,5 +354,71 @@ function dbtng_example_form_add_submit($form, &$form_state) {
   if ($return) {
     drupal_set_message(t("Created entry @entry", array('@entry' => print_r($entry, TRUE))));
   }
+}
+
+
+/**
+ * Sample UI to update a record.
+ */
+function dbtng_example_form_update($form, &$form_state) {
+  $form = array(
+    '#prefix' => '<div id="updateform">',
+    '#suffix' => '</div>',
+  );
+
+  //$entries = dbtng_example_entry_load();
+  //$keyed_entries = array();
+  //if (empty($entries)) {
+  //  $form['no_values'] = array(
+  //    '#value' => t("No entries exist in the table dbtng_example table."),
+  //  );
+  //  return $form;
+  //}
+//
+  //foreach ($entries as $entry) {
+  //  $options[$entry->pid] = t("@pid: @name @surname (@age)", array('@pid' => $entry->pid, '@name' => $entry->name, '@surname' => $entry->surname, '@age' => $entry->age));
+  //  $keyed_entries[$entry->pid] = $entry;
+  //}
+  //$default_entry = !empty($form_state['values']['pid']) ? $keyed_entries[$form_state['values']['pid']] : $entries[0];
+//
+  //$form_state['entries'] = $keyed_entries;
+//
+  //$form['pid'] = array(
+  //  '#type'          => 'select',
+  //  '#options'       => $options,
+  //  '#title'         => t('Choose entry to update'),
+  //  '#default_value' => $default_entry->pid,
+  //  '#ajax'          => array(
+  //    'wrapper'  => 'updateform',
+  //    'callback' => 'dbtng_example_form_update_callback',
+  //  ),
+  //);
+//
+  //$form['name'] = array(
+  //  '#type' => 'textfield',
+  //  '#title' => t('Updated first name'),
+  //  '#size' => 15,
+  //  '#default_value' => $default_entry->name,
+  //);
+//
+  //$form['surname'] = array(
+  //  '#type' => 'textfield',
+  //  '#title' => t('Updated last name'),
+  //  '#size' => 15,
+  //  '#default_value' => $default_entry->surname,
+  //);
+  //$form['age'] = array(
+  //  '#type' => 'textfield',
+  //  '#title' => t('Updated age'),
+  //  '#size' => 4,
+  //  '#default_value' => $default_entry->age,
+  //  '#description' => t("Values greater than 127 will cause an exception"),
+  //);
+//
+  //$form['submit'] = array(
+  //  '#type' => 'submit',
+  //  '#value' => t('Update'),
+  //);
+  return $form;
 }
 
