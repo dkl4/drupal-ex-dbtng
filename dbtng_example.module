@@ -68,6 +68,47 @@
 
 
 /**
+ * Save an entry in the database.
+ *
+ * The underlying DBTNG function is db_insert().
+ *
+ * In Drupal 6, this would have been:
+ * @code
+ *   db_query(
+ *     "INSERT INTO {dbtng_example} (name, surname, age)
+ *       VALUES ('%s', '%s', '%d')",
+ *     $entry['name'],
+ *     $entry['surname'],
+ *     $entry['age']
+ *   );
+ * @endcode
+ *
+ * Exception handling is shown in this example. It could be simplified
+ * without the try/catch blocks, but since an insert will throw an exception
+ * and terminate your application if the exception is not handled, it is best
+ * to employ try/catch.
+ *
+ * @param $entry
+ *   An array containing all the fields of the database record.
+ *
+ * @see db_insert()
+ */
+function dbtng_example_entry_insert($entry) {
+  $return_value = NULL;
+  try {
+    $return_value = db_insert('dbtng_example')
+                    ->fields($entry)            // Where do we check that inserted values are of correct form (safe)?
+                    ->execute();                // I can enter "<b>Joe<b>" and appears as "<b>Joe<b>" on List
+  }
+  catch (Exception $e) {
+    drupal_set_message(t('db_insert failed. Message = %message, query= %query',
+      array('%message' => $e->getMessage(), '%query' => $e->query_string)), 'error');
+  }
+  return $return_value;
+}
+
+
+/**
  * Read from the database using a filter array.
  *
  * In Drupal 6, the standard function to perform reads was db_query(), and
@@ -293,5 +334,25 @@ function dbtng_example_form_add($form, &$form_state) {
   );
 
   return $form;
+}
+
+
+/**
+ * Submit handler for 'add entry' form.
+ */
+function dbtng_example_form_add_submit($form, &$form_state) {
+  global $user;
+
+  // Save the submitted entry.
+  $entry = array(
+    'name'    => $form_state['values']['name'],
+    'surname' => $form_state['values']['surname'],
+    'age'     => $form_state['values']['age'],
+    'uid'     => $user->uid,
+  );
+  $return = dbtng_example_entry_insert($entry);
+  if ($return) {
+    drupal_set_message(t("Created entry @entry", array('@entry' => print_r($entry, TRUE))));
+  }
 }
 
