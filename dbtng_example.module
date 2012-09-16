@@ -366,59 +366,59 @@ function dbtng_example_form_update($form, &$form_state) {
     '#suffix' => '</div>',
   );
 
-  //$entries = dbtng_example_entry_load();
-  //$keyed_entries = array();
-  //if (empty($entries)) {
-  //  $form['no_values'] = array(
-  //    '#value' => t("No entries exist in the table dbtng_example table."),
-  //  );
-  //  return $form;
-  //}
-//
-  //foreach ($entries as $entry) {
-  //  $options[$entry->pid] = t("@pid: @name @surname (@age)", array('@pid' => $entry->pid, '@name' => $entry->name, '@surname' => $entry->surname, '@age' => $entry->age));
-  //  $keyed_entries[$entry->pid] = $entry;
-  //}
-  //$default_entry = !empty($form_state['values']['pid']) ? $keyed_entries[$form_state['values']['pid']] : $entries[0];
-//
-  //$form_state['entries'] = $keyed_entries;
-//
-  //$form['pid'] = array(
-  //  '#type'          => 'select',
-  //  '#options'       => $options,
-  //  '#title'         => t('Choose entry to update'),
-  //  '#default_value' => $default_entry->pid,
-  //  '#ajax'          => array(
-  //    'wrapper'  => 'updateform',
-  //    'callback' => 'dbtng_example_form_update_callback',
-  //  ),
-  //);
-//
-  //$form['name'] = array(
-  //  '#type' => 'textfield',
-  //  '#title' => t('Updated first name'),
-  //  '#size' => 15,
-  //  '#default_value' => $default_entry->name,
-  //);
-//
-  //$form['surname'] = array(
-  //  '#type' => 'textfield',
-  //  '#title' => t('Updated last name'),
-  //  '#size' => 15,
-  //  '#default_value' => $default_entry->surname,
-  //);
-  //$form['age'] = array(
-  //  '#type' => 'textfield',
-  //  '#title' => t('Updated age'),
-  //  '#size' => 4,
-  //  '#default_value' => $default_entry->age,
-  //  '#description' => t("Values greater than 127 will cause an exception"),
-  //);
-//
-  //$form['submit'] = array(
-  //  '#type' => 'submit',
-  //  '#value' => t('Update'),
-  //);
+  $entries = dbtng_example_entry_load();   // entries is an array of stdClass objects
+  if (empty($entries)) {
+    $form['no_values'] = array(
+      '#value' => t("No entries exist in the table dbtng_example table."),
+    );
+    return $form;
+  }
+
+  $keyed_entries = array();
+  foreach ($entries as $entry) {
+    $options[$entry->pid] = t("@pid: @name @surname (@age)", array('@pid' => $entry->pid, '@name' => $entry->name, '@surname' => $entry->surname, '@age' => $entry->age));
+    $keyed_entries[$entry->pid] = $entry;
+  }
+  $default_entry = !empty($form_state['values']['pid']) ? $keyed_entries[$form_state['values']['pid']] : $entries[0];
+
+  $form_state['entries'] = $keyed_entries;
+
+  $form['pid'] = array(
+    '#type'          => 'select',
+    '#options'       => $options,
+    '#title'         => t('Choose entry to update'),
+    '#default_value' => $default_entry->pid,
+    '#ajax'          => array(
+      'wrapper'  => 'updateform',
+      'callback' => 'dbtng_example_form_update_callback',
+    ),
+  );
+
+  $form['name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Updated first name'),
+    '#size'          => 15,
+    '#default_value' => $default_entry->name,
+  );
+
+  $form['surname'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Updated last name'),
+    '#size'          => 15,
+    '#default_value' => $default_entry->surname,
+  );
+  $form['age'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Updated age'),
+    '#size'          => 4,
+    '#default_value' => $default_entry->age,
+    '#description'   => t("Values greater than 127 will cause an exception"),
+  );
+
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Update'),
+  );
   return $form;
 }
 
