@@ -146,6 +146,28 @@ function dbtng_example_entry_update($entry) {
 }
 
 
+/**
+ * Delete an entry from the database.
+ *
+ * The usage of db_query is deprecated except for static queries.
+ * Formerly, a deletion might have been accomplished like this:
+ * @code
+ *  db_query("DELETE FROM {dbtng_example} WHERE pid = %d", $entry['pid]);
+ * @endcode
+ *
+ * @param $entry
+ *   An array containing at least the person identifier 'pid' element of the
+ *   entry to delete.
+ *
+ * @see db_delete()
+ */
+function dbtng_example_entry_delete($entry) {
+  db_delete('dbtng_example')
+    ->condition('pid', $entry['pid'])
+    ->execute();
+                  // This is apparently not used in current example source - no tab in GUI
+}
+
 
 /**
  * Read from the database using a filter array.
