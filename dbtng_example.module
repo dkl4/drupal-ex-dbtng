@@ -358,6 +358,44 @@ function dbtng_example_form_add_submit($form, &$form_state) {
 
 
 /**
+ * Update an entry in the database.
+ *
+ * The former, deprecated techniques used db_query() or drupal_write_record():
+ * @code
+ *  drupal_write_record('dbtng_example', $entry, $entry['pid']);
+ * @endcode
+ *
+ * @code
+ *  db_query(
+ *    "UPDATE {dbtng_example}
+ *     SET name = '%s', surname = '%s', age = '%d'
+ *     WHERE pid = %d",
+ *     $entry['pid']
+ *  );
+ * @endcode
+ *
+ * @param $entry
+ *   An array containing all the fields of the item to be updated.
+ *
+ * @see db_update()
+ */
+function dbtng_example_entry_update($entry) {
+  try {
+    // db_update()...->execute() returns the number of rows updated.
+    $count = db_update('dbtng_example')
+              ->fields($entry)
+              ->condition('pid', $entry['pid'])
+              ->execute();
+  }
+  catch (Exception $e) {
+    drupal_set_message(t('db_update failed. Message = %message, query= %query',
+      array('%message' => $e->getMessage(), '%query' => $e->query_string)), 'error');
+  }
+  return $count;
+}
+
+
+/**
  * Sample UI to update a record.
  */
 function dbtng_example_form_update($form, &$form_state) {
@@ -439,3 +477,24 @@ function dbtng_example_form_update_callback($form, $form_state) {
   return $form;
 }
 
+
+/**
+ * Submit handler for 'update entry' form.
+ */
+function dbtng_example_form_update_submit($form, &$form_state) {
+  global $user;
+
+  // Save the submitted entry.
+  $entry = array(
+    'pid'     => $form_state['values']['pid'],
+    'name'    => $form_state['values']['name'],
+    'surname' => $form_state['values']['surname'],
+    'age'     => $form_state['values']['age'],
+    'uid'     => $user->uid,
+  );
+  $count = dbtng_example_entry_update($entry);
+  drupal_set_message(t("Updated entry @entry (@count row updated)", array('@count' => $count, '@entry' => print_r($entry, TRUE))));
+}
+/**
+ * @} End of "defgroup dbtng_example".
+ */
