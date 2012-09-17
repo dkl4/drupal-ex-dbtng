@@ -261,6 +261,71 @@ function dbtng_example_entry_load($entry = array()) {
 }
 
 
+/**
+ * Render a filtered list of entries in the database.
+ *
+ * DBTNG also helps processing queries that return several rows, providing the
+ * found objects in the same query execution call.
+ *
+ * This function queries the database using a JOIN between users table and the
+ * example entries, to provide the username that created the entry, and creates
+ * a table with the results, processing each row.
+ *
+ * SELECT
+ *  e.pid as pid, e.name as name, e.surname as surname, e.age as age
+ *  u.name as username
+ * FROM
+ *  {dbtng_example} e
+ * JOIN
+ *  users u ON e.uid = u.uid
+ * WHERE
+ *  e.name = 'John' AND e.age > 18
+ *
+ * @see db_select()
+ * @see http://drupal.org/node/310075
+ */
+function dbtng_example_advanced_list() {
+  $output = '';
+
+  $select = db_select('dbtng_example', 'e');      // 'dbtng' is table, 'e' is the alias
+  // Join the users table, so we can get the entry creator's username.
+  $select->join('users', 'u', 'e.uid = u.uid');
+  // Select these specific fields for the output.
+  $select->addField('e', 'pid');
+  $select->addField('u', 'name', 'username');     // rename a field
+  $select->addField('e', 'name');
+  $select->addField('e', 'surname');
+  $select->addField('e', 'age');
+  // Filter only persons named "John".
+  $select->condition('e.name', 'John');           // '=' is default operator
+  // Filter only persons older than 18 years.
+  $select->condition('e.age', 18, '>');           // use '>' operator
+  // Make sure we only get items 0-49, for scalability reasons.
+  $select->range(0, 50);
+
+  // Now, loop all these entries and show them in a table. Note that there is no
+  // db_fetch_* object or array function being called here. Also note that the
+  // following line could have been written as
+  // $entries = $select->execute()->fetchAll() which would return each selected
+  // record as an object instead of an array.
+  $entries = $select->execute()->fetchAll(PDO::FETCH_ASSOC);
+  if (!empty($entries)) {
+    $rows = array();
+    foreach ($entries as $entry) {
+      // Sanitize the data before handing it off to the theme layer.
+      $rows[] = array_map('check_plain', $entry);
+    }
+    // Make a table for them.
+    $header = array(t('Id'), t('Created by'), t('Name'), t('Surname'), t('Age'));
+    $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  }
+  else {
+    drupal_set_message(t('No entries meet the filter criteria (Name = "John" and Age > 18).'));
+  }
+  return $output;
+}
+
+
 //// Helper functions ////
 
 /**
@@ -328,12 +393,12 @@ function dbtng_example_menu() {
     'access callback' => TRUE,
     'weight'          => -5,
   );
-  //$items['examples/dbtng/advanced'] = array(
-  //  'title'           => 'Advanced list',
-  //  'page callback'   => 'dbtng_example_advanced_list',
-  //  'access callback' => TRUE,
-  //  'type'            => MENU_LOCAL_TASK,
-  //);
+  $items['examples/dbtng/advanced'] = array(
+    'title'           => 'Advanced list',
+    'page callback'   => 'dbtng_example_advanced_list',
+    'access callback' => TRUE,
+    'type'            => MENU_LOCAL_TASK,
+  );
 
   return $items;
 }
