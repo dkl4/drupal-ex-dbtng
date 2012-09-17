@@ -81,7 +81,7 @@ function dbtng_example_schema() {
     'description' => 'Stores example person entries for demonstration purposes.',
     'fields' => array(
       'pid'  => array(
-        'type' => 'serial',
+        'type' => 'serial',            // This seems to indicate auto-increment integer - also since it's primary key
         'not null' => TRUE,
         'description' => 'Primary Key: Unique person ID.',
       ),
@@ -109,7 +109,7 @@ function dbtng_example_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-        'size' => 'tiny',
+        'size' => 'tiny',                                  // Implies constraint of age <= 127
         'description' => 'The age of the person in years.',
       )
     ),
